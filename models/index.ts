@@ -6,3 +6,4 @@ export { Flight } from "./flight";
 export { FlightTicket } from "./flight-ticket";
 export { City, State, Country } from "./location";
 export { Airport } from "./airport";
+export { Airplane } from "./airplane";

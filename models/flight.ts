@@ -1,7 +1,8 @@
-import { Airport, FlightTicket } from "./index";
+import { Airport, FlightTicket, Airplane } from "./index";
 
 export class Flight {
   flightNumber: number;
+  airplane: Airplane;
   origin: Airport;
   destination: Airport;
   departureDate: Date;
@@ -11,6 +12,7 @@ export class Flight {
 
   constructor(
     flightNumber: number,
+    airplane: Airplane,
     origin: Airport,
     destination: Airport,
     departureDate: Date,
@@ -18,6 +20,7 @@ export class Flight {
     duration: number
   ) {
     this.flightNumber = flightNumber;
+    this.airplane = airplane;
     this.origin = origin;
     this.destination = destination;
     this.departureDate = departureDate;
