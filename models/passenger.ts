@@ -8,10 +8,9 @@ export class Passenger extends User {
     firstName: string,
     lastName: string,
     email: string,
-    password: string,
     passportId: string
   ) {
-    super(firstName, lastName, email, password);
+    super(firstName, lastName, email);
     this.passportId = passportId;
     this.reservations = [];
   }

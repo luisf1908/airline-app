@@ -11,7 +11,29 @@ export class Airport {
     this.flights = [];
   }
 
-  addflight(flightNumber: number, cost: number, airplane: Ai);
+  addFlight(
+    flightNumber: number,
+    airplane: Airplane,
+    cost: number,
+    origin: Airport,
+    destination: Airport,
+    departureDate: Date,
+    arrivingDate: Date,
+    duration: number
+  ): void {
+    this.flights.push(
+      new Flight(
+        flightNumber,
+        airplane,
+        cost,
+        origin,
+        destination,
+        departureDate,
+        arrivingDate,
+        duration
+      )
+    );
+  }
 }
 
 /*export class AirportGraph {
