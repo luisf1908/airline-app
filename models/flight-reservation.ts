@@ -40,7 +40,7 @@ export class FlightReservation {
     return reservationCode;
   }
 
-  getPassengersInformation(passengerQty: number): void {
+  private getPassengersInformation(passengerQty: number): void {
     for (let i = 1; i <= passengerQty; i++) {
       if (i === 1) {
         console.log(`Passenger ${i} (Reservation Holder)`);
@@ -51,6 +51,7 @@ export class FlightReservation {
       const lastName = prompt("Last name: ");
       const email = prompt("Email: ");
       const passportId = prompt("Passport ID: ");
+      console.log(`\n`);
 
       this.passengers.push(
         new Passenger(firstName, lastName, email, passportId)
@@ -58,7 +59,7 @@ export class FlightReservation {
     }
   }
 
-  generateDefaultBaggageMatrix(): void {
+  private generateDefaultBaggageMatrix(): void {
     let tripsQty: number = 0;
     if (this.itinerary.returnTrip.length > 0) {
       tripsQty = 2;
@@ -73,7 +74,7 @@ export class FlightReservation {
       }))
     );
   }
-  addBaggageForEachPassenger(): void {
+  private addBaggageForEachPassenger(): void {
     this.generateDefaultBaggageMatrix();
     if (this.baggage.length === 0) {
       throw new Error("Baggage and seat matrix is empty");
@@ -116,7 +117,7 @@ export class FlightReservation {
       }
     }
   }
-  addBaggage(flightIndex: number, passengerIndex: number): void {
+  private addBaggage(flightIndex: number, passengerIndex: number): void {
     let addAnotherBaggage: boolean = true;
     const baggage: Baggage = {
       personalItem: 1,
@@ -151,7 +152,7 @@ export class FlightReservation {
     }
   }
 
-  generateDefaultSeatMatrix(): void {
+  private generateDefaultSeatMatrix(): void {
     let totalFlightsQty: number =
       this.itinerary.outboundTrip.length + this.itinerary.returnTrip.length;
 
@@ -159,7 +160,7 @@ export class FlightReservation {
       Array.from({ length: this.passengers.length }, () => "")
     );
   }
-  reserveSeatForEachPassenger(): void {
+  private reserveSeatForEachPassenger(): void {
     this.generateDefaultSeatMatrix();
     const totalReservationFlights: Flight[] =
       this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
@@ -185,12 +186,15 @@ export class FlightReservation {
     }
   }
 
-  createReservation(itinerary: Itinerary, passengerQty: number): void {
+  createReservation(
+    itinerary: Itinerary,
+    passengerQty: number
+  ): FlightReservation | null {
     this.itinerary = itinerary;
 
     //Passenger Information
     console.log("************************************************");
-    console.log("Passenger Information");
+    console.log("Passenger Information\n");
     this.getPassengersInformation(passengerQty);
     console.log("************************************************");
 
@@ -218,6 +222,34 @@ export class FlightReservation {
       console.log("Seat Selection");
       this.reserveSeatForEachPassenger();
       console.log("************************************************");
+    }
+
+    //Confirm reservation
+    console.log("************************************************");
+    console.log("Reservation summary\n");
+    console.log("Outbound Trip");
+    this.itinerary.displayTripInformation(this.itinerary.outboundTrip);
+
+    if (this.itinerary.returnTrip.length > 0) {
+      console.log(`\n\nReturn Trip`);
+      this.itinerary.displayTripInformation(this.itinerary.returnTrip);
+    }
+
+    console.log("************************************************");
+    console.log(`Total cost: $${this.cost}\n`);
+
+    console.log("************************************************");
+    console.log(
+      "1. Confirm reservation\nType any other character to cancel reservation"
+    );
+    const userChoice3 = Number(prompt(""));
+    if (userChoice3 === 1) {
+      this.reservationCode = this.generateReservationCode();
+      console.log(`Congratulations, your reservation has been confirmed`);
+      console.log(`Reservation code: ${this.reservationCode}`);
+      return this;
+    } else {
+      return null;
     }
   }
 }
@@ -248,8 +280,8 @@ const flight1 = new Flight(
   100,
   airport1,
   airport2,
-  new Date("2025-04-25T14:00:00Z"),
-  new Date("2025-04-25T16:00:00Z"),
+  new Date("2025-04-25T09:25:00Z"),
+  new Date("2025-04-25T10:30:00Z"),
   120
 );
 const flight2 = new Flight(
@@ -258,8 +290,8 @@ const flight2 = new Flight(
   100,
   airport2,
   airport3,
-  new Date("2025-4-29T09:00:00Z"),
-  new Date("2025-4-30T11:00:00Z"),
+  new Date("2025-04-25T11:48:00Z"),
+  new Date("2025-04-25T13:05:00Z"),
   120
 );
 const flight3 = new Flight(
@@ -268,20 +300,22 @@ const flight3 = new Flight(
   100,
   airport3,
   airport1,
-  new Date("2025-4-29T09:00:00Z"),
-  new Date("2025-4-30T11:00:00Z"),
+  new Date("2025-04-30T09:07:00Z"),
+  new Date("2025-04-30T11:14:00Z"),
   120
 );
 
 const r1 = new FlightReservation();
 
-//r1.itinerary.outboundTrip.push(flight1, flight2);
-//r1.itinerary.returnTrip.push(flight3);
-//r1.passengers.push(p1);
-//r1.passengers.push(p2);
+const i1 = new Itinerary();
 
-//r1.reserveSeatForEachPassenger();
-//console.log(r1.seat);
+i1.outboundTrip.push(flight1, flight2);
+i1.returnTrip.push(flight3);
 
-r1.getPassengersInformation(2);
-console.log(r1.passengers);*/
+r1.createReservation(i1, 2);
+
+console.log(r1.reservationCode);
+console.log(r1.passengers);
+console.log(r1.baggage);
+console.log(r1.seat);
+console.log(r1.itinerary);*/

@@ -25,7 +25,7 @@ export class Itinerary {
     return [originAirport, destinationAirport];
   }
 
-  getTimeDifference(
+  private getTimeDifference(
     date1: Date,
     date2: Date
   ): { hours: number; minutes: number } {
@@ -39,36 +39,9 @@ export class Itinerary {
     return { hours, minutes };
   }
 
-  calculateTripTime(
-    trip: Flight[],
-    tripLayover: { hours: number; minutes: number }[]
-  ): { hours: number; minutes: number } {
-    const totalFlightDurationsInMinutes = trip.reduce(
-      (totalDuration, currentFlight) => {
-        return totalDuration + currentFlight.duration;
-      },
-      0
-    );
-
-    const totalLayoversDurationInMinutes = tripLayover.reduce(
-      (totalDuration, currentLayover) => {
-        return (
-          totalDuration + currentLayover.hours * 60 + currentLayover.minutes
-        );
-      },
-      0
-    );
-
-    const totalTripDurationInMinutes =
-      totalFlightDurationsInMinutes + totalLayoversDurationInMinutes;
-
-    const hours: number = Math.floor(totalTripDurationInMinutes / 60);
-    const minutes: number = totalTripDurationInMinutes % 60;
-
-    return { hours, minutes };
-  }
-
-  calculateLayovers(trip: Flight[]): { hours: number; minutes: number }[] {
+  private calculateLayovers(
+    trip: Flight[]
+  ): { hours: number; minutes: number }[] {
     if (trip.length - 1 < 1) {
       return [];
     }
@@ -147,7 +120,7 @@ export class Itinerary {
   }
 }
 
-const i1 = new Itinerary();
+/*const i1 = new Itinerary();
 
 const country1 = new Country("Costa Rica");
 const state1 = new State("San Jose", country1);
@@ -192,6 +165,6 @@ const flight3 = new Flight(
   120
 );
 
-i1.displayTripInformation([flight1, flight2]);
+i1.displayTripInformation([flight1, flight2]);*/
 //i1.calculateLayovers([flight3]);
 //console.log(i1.layovers);
