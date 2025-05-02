@@ -85,6 +85,18 @@ export class Flight {
     return [monthString, day, year, hour, minutes];
   }
 
+  areTicketsAvailable(ticketQty: number): boolean {
+    const totalTickets = this.airplane.SEATS_PER_ROW * this.airplane.rows;
+
+    const ticketsAvailable = totalTickets - this.tickets.length;
+
+    if (ticketsAvailable >= ticketQty) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   displayFlightInformationSummary(): void {}
 }
 
