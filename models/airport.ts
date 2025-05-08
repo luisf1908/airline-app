@@ -1,4 +1,6 @@
 import { Flight, City, Airplane, Country, State } from "./index";
+import promptSync from "prompt-sync";
+const prompt = promptSync();
 
 export class Airport {
   airportId: string;
@@ -93,13 +95,11 @@ class AirportGraph {
   }
 
   filterAirportFlightsByDate(
-    airportId: string,
+    airport: Airport,
     day: number,
     month: number,
     year: number
   ): Flight[] | undefined {
-    const airport = this.getAirport(airportId);
-
     const filteredFlights = airport?.flights.filter(
       (flight) =>
         flight.departureDate.getUTCFullYear() === year &&
@@ -153,14 +153,116 @@ class AirportGraph {
   ): Flight[] | undefined {
     const airport = this.getAirport(airportId);
 
-    const minimumDepartureDate = arrivingDate;
-    minimumDepartureDate.setHours(arrivingDate.getHours() + 1);
+    const MAX_LAYOVER_TIME_IN_HOURS: number = 16;
+
+    const minimumDepartureDate = new Date(arrivingDate);
+    const maximumDepartureDate = new Date(arrivingDate);
+
+    minimumDepartureDate.setUTCHours(minimumDepartureDate.getUTCHours() + 1);
+    maximumDepartureDate.setUTCHours(
+      maximumDepartureDate.getUTCHours() + MAX_LAYOVER_TIME_IN_HOURS
+    );
 
     const filteredFlights = airport?.flights.filter(
-      (flight) => flight.departureDate > minimumDepartureDate === true
+      (flight) =>
+        flight.departureDate > minimumDepartureDate === true &&
+        flight.departureDate < maximumDepartureDate === true
     );
 
     return filteredFlights;
+  }
+
+  searchFlightsInputs():
+    | {
+        origin: Airport;
+        destination: Airport;
+        tripDay: number;
+        tripMonth: number;
+        tripYear: number;
+      }
+    | undefined {
+    const originId = prompt("Origin Airport ID: ").toUpperCase();
+    const destinationId = prompt("Destination Airport ID: ").toUpperCase();
+    const tripDay = Number(prompt("Day (1-31): "));
+    const tripMonth = Number(prompt("Month (1-12): "));
+    const tripYear = Number(prompt("Year: "));
+
+    const origin = this.getAirport(originId);
+    const destination = this.getAirport(destinationId);
+
+    //Error Handling
+    const currentDate = new Date();
+
+    const tripDate = new Date();
+    tripDate.setUTCDate(tripDay);
+    tripDate.setUTCMonth(tripMonth - 1);
+    tripDate.setUTCFullYear(tripYear);
+
+    if (!originId || !destinationId || !tripDay || !tripMonth || !tripYear) {
+      console.log("Invalid input");
+      return;
+    }
+    if (!origin) {
+      console.log("Origin airport is not available");
+      return;
+    }
+    if (!destination) {
+      console.log("Destination airport is not available");
+      return;
+    }
+    if (
+      tripDay < 1 ||
+      tripDay > 31 ||
+      tripMonth < 1 ||
+      tripMonth > 12 ||
+      tripDate < currentDate
+    ) {
+      console.log("Invalid Date");
+      return;
+    }
+    //End of error handling
+
+    return {
+      origin: origin,
+      destination: destination,
+      tripDay: tripDay,
+      tripMonth: tripMonth,
+      tripYear: tripYear,
+    };
+  }
+
+  searchFlight(): Flight[][] | undefined {
+    const inputs = this.searchFlightsInputs();
+    if (!inputs) {
+      return;
+    }
+    const { origin, destination, tripDay, tripMonth, tripYear } = inputs;
+
+    const tripsAvailable: Flight[][] = [];
+
+    const filteredFlightsByDate = this.filterAirportFlightsByDate(
+      origin,
+      tripDay,
+      tripMonth,
+      tripYear
+    );
+
+    if (!filteredFlightsByDate) {
+      console.log("No flights were found on this date");
+      return;
+    }
+
+    const directFlights = filteredFlightsByDate.filter(
+      (flight) => flight.destination === destination
+    );
+
+    if (directFlights.length > 0) {
+      for (const flight of directFlights) {
+        tripsAvailable.push([flight]);
+      }
+    }
+
+    console.log(tripsAvailable);
   }
 }
 
@@ -192,8 +294,8 @@ graph.addAirportFlightConnection(
   100,
   "SJO",
   "PTY",
-  new Date("2025-04-25T09:25:00Z"),
-  new Date("2025-04-25T10:30:00Z"),
+  new Date("2025-06-25T03:25:00Z"),
+  new Date("2025-06-25T05:30:00Z"),
   120
 );
 
@@ -201,10 +303,10 @@ graph.addAirportFlightConnection(
   924,
   airplane2,
   100,
-  "PTY",
+  "SJO",
   "MDE",
-  new Date("2025-04-25T10:48:00Z"),
-  new Date("2025-04-25T12:05:00Z"),
+  new Date("2025-06-25T06:48:00Z"),
+  new Date("2025-06-25T07:05:00Z"),
   120
 );
 
@@ -212,18 +314,11 @@ graph.addAirportFlightConnection(
   545,
   airplane3,
   100,
-  "PTY",
+  "SJO",
   "MDE",
-  new Date("2025-05-31T17:07:00Z"),
-  new Date("2025-05-31T19:14:00Z"),
+  new Date("2025-06-26T20:07:00Z"),
+  new Date("2025-06-26T23:14:00Z"),
   120
 );
 
-//console.log(graph.getAirport("SJO"));
-
-console.log(
-  graph.filterAirportFlightsByLayoverSuitability(
-    "PTY",
-    new Date("2025-04-25T10:30:00Z")
-  )
-);
+graph.searchFlight();
