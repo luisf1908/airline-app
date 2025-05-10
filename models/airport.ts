@@ -292,7 +292,7 @@ class AirportGraph {
 
     //Search for flight with one layover
 
-    const layover1TotalIndirectFlights: Flight[] = [];
+    const layover1TotalIndirectFlights: Flight[][] = [];
     for (let i = 0; i < originIndirectFlights.length; i++) {
       const layover1Filter1 = this.filterAirportFlightsByLayoverSuitability(
         originIndirectFlights[i].destination,
@@ -336,12 +336,48 @@ class AirportGraph {
 
       if (layover1IndirectFlights.length > 0) {
         for (const flight of layover1IndirectFlights) {
-          layover1TotalIndirectFlights.push(flight);
+          layover1TotalIndirectFlights.push([originIndirectFlights[i], flight]);
         }
       }
     }
 
+    //Search for flights with two layovers
+
+    for (let i = 0; i < layover1TotalIndirectFlights.length; i++) {
+      const layover2Filter1 = this.filterAirportFlightsByLayoverSuitability(
+        layover1TotalIndirectFlights[i][1].destination,
+        layover1TotalIndirectFlights[i][1].arrivingDate
+      );
+
+      if (!layover2Filter1 || layover2Filter1.length === 0) {
+        continue;
+      }
+
+      const layover2Filter2 = this.filterAirportFlightsByTicketAvailability(
+        layover2Filter1,
+        ticketQty
+      );
+
+      if (!layover2Filter2 || layover2Filter2.length === 0) {
+        continue;
+      }
+
+      const layover2DirectFlights = layover2Filter2.filter(
+        (flight) => flight.destination === destination
+      );
+
+      if (layover2DirectFlights.length > 0) {
+        for (const flight of layover2DirectFlights) {
+          tripsAvailable.push([
+            layover1TotalIndirectFlights[i][0],
+            layover1TotalIndirectFlights[i][1],
+            flight,
+          ]);
+        }
+      }
+    }
     console.log(tripsAvailable);
+    //console.log(layover1TotalIndirectFlights);
   }
 }
 
@@ -425,8 +461,8 @@ graph.addAirportFlightConnection(
   100,
   "SJO",
   "PTY",
-  new Date("2025-06-01T07:30:00Z"),
-  new Date("2025-06-01T09:00:00Z"),
+  new Date("2025-06-02T04:30:00Z"),
+  new Date("2025-06-02T05:00:00Z"),
   120
 );
 
@@ -438,8 +474,8 @@ graph.addAirportFlightConnection(
   100,
   "BOG",
   "MDE",
-  new Date("2025-06-01T14:00:00Z"),
-  new Date("2025-06-01T15:00:00Z"),
+  new Date("2025-06-01T19:00:00Z"),
+  new Date("2025-06-01T20:00:00Z"),
   120
 );
 
@@ -449,8 +485,8 @@ graph.addAirportFlightConnection(
   100,
   "BOG",
   "MDE",
-  new Date("2025-06-01T19:00:00Z"),
-  new Date("2025-06-01T20:00:00Z"),
+  new Date("2025-06-01T17:00:00Z"),
+  new Date("2025-06-01T18:00:00Z"),
   120
 );
 
@@ -489,10 +525,21 @@ graph.addAirportFlightConnection(
   120
 );
 
+graph.addAirportFlightConnection(
+  11,
+  airplane1,
+  100,
+  "PTY",
+  "BOG",
+  new Date("2025-06-01T13:30:00Z"),
+  new Date("2025-06-01T15:30:00Z"),
+  120
+);
+
 //Mexico Flights
 
 graph.addAirportFlightConnection(
-  11,
+  12,
   airplane1,
   100,
   "MEX",
@@ -503,7 +550,7 @@ graph.addAirportFlightConnection(
 );
 
 graph.addAirportFlightConnection(
-  12,
+  13,
   airplane1,
   100,
   "MEX",
@@ -516,7 +563,7 @@ graph.addAirportFlightConnection(
 //Medellin Flights
 
 graph.addAirportFlightConnection(
-  13,
+  14,
   airplane1,
   100,
   "MDE",
