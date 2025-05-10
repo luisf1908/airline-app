@@ -94,81 +94,94 @@ class AirportGraph {
     );
   }
 
-  filterAirportFlightsByDate(
-    airport: Airport,
+  private findDirectFlights(
+    flights: Flight[],
+    tripDestination: Airport
+  ): Flight[] {
+    return flights.filter((flight) => flight.destination === tripDestination);
+  }
+
+  private findIndirectFlights(
+    flights: Flight[],
+    tripDestination: Airport
+  ): Flight[] {
+    return flights.filter((flight) => flight.destination !== tripDestination);
+  }
+
+  //Filter function that filters flights by an specific date and also filters by ticket availability
+  private filterOriginFlights(
+    tripOriginAirport: Airport,
+    tripDestinationAirport: Airport,
     day: number,
     month: number,
-    year: number
-  ): Flight[] | undefined {
-    const filteredFlights = airport?.flights.filter(
+    year: number,
+    ticketQty: number
+  ): [Flight[], Flight[]] {
+    const filteredFlights = tripOriginAirport?.flights.filter(
       (flight) =>
         flight.departureDate.getUTCFullYear() === year &&
         flight.departureDate.getUTCMonth() === month - 1 && //getUTCMonth() returns a number from 0-11, so the comparison is with month-1
-        flight.departureDate.getUTCDate() === day
+        flight.departureDate.getUTCDate() === day &&
+        flight.areTicketsAvailable(ticketQty) === true
     );
 
-    return filteredFlights;
-  }
-
-  /*filterNationalAirportFlights(airport: Airport): Flight[] | undefined {
-    const filteredFlights = airport?.flights.filter(
-      (flight) =>
-        flight.origin.city.stateId.countryId ===
-        flight.destination.city.stateId.countryId
+    const directFlights = this.findDirectFlights(
+      filteredFlights,
+      tripDestinationAirport
+    );
+    const indirectFlights = this.findIndirectFlights(
+      filteredFlights,
+      tripDestinationAirport
     );
 
-    return filteredFlights;
+    return [directFlights, indirectFlights];
   }
 
-  filterInternationalAirportFlights(airport: Airport): Flight[] | undefined {
-    const filteredFlights = airport?.flights.filter(
-      (flight) =>
-        flight.origin.city.stateId.countryId !==
-        flight.destination.city.stateId.countryId
-    );
-
-    return filteredFlights;
-  }
-*/
-
-  filterAirportFlightsByTicketAvailability(
-    flights: Flight[],
+  //Filter function that filters flights by layover suitability and also filters by ticket availability
+  private filterLayoverFlights(
+    layoverPreviousAirport: Airport,
+    layoverAirport: Airport,
+    tripDestinationAirport: Airport,
+    arrivingDate: Date,
     ticketQty: number
-  ): Flight[] | undefined {
-    const filteredFlights = flights.filter(
-      (flight) => flight.areTicketsAvailable(ticketQty) === true
-    );
-
-    return filteredFlights;
-  }
-
-  filterAirportFlightsByLayoverSuitability(
-    airport: Airport,
-    arrivingDate: Date
-  ): Flight[] | undefined {
+  ): [Flight[], Flight[]] {
+    const MIN_LAYOVER_TIME_IN_HOURS: number = 1;
     const MAX_LAYOVER_TIME_IN_HOURS: number = 16;
 
     const minimumDepartureDate = new Date(arrivingDate);
     const maximumDepartureDate = new Date(arrivingDate);
 
-    minimumDepartureDate.setUTCHours(minimumDepartureDate.getUTCHours() + 1);
+    minimumDepartureDate.setUTCHours(
+      minimumDepartureDate.getUTCHours() + MIN_LAYOVER_TIME_IN_HOURS
+    );
     maximumDepartureDate.setUTCHours(
       maximumDepartureDate.getUTCHours() + MAX_LAYOVER_TIME_IN_HOURS
     );
 
-    const filteredFlights = airport?.flights.filter(
+    const filteredFlights = layoverAirport?.flights.filter(
       (flight) =>
         flight.departureDate > minimumDepartureDate === true &&
-        flight.departureDate < maximumDepartureDate === true
+        flight.departureDate < maximumDepartureDate === true &&
+        flight.destination !== layoverPreviousAirport &&
+        flight.areTicketsAvailable(ticketQty) === true
     );
 
-    return filteredFlights;
+    const directFlights = this.findDirectFlights(
+      filteredFlights,
+      tripDestinationAirport
+    );
+    const indirectFlights = this.findIndirectFlights(
+      filteredFlights,
+      tripDestinationAirport
+    );
+
+    return [directFlights, indirectFlights];
   }
 
-  searchFlightsInputs():
+  private searchFlightsInputs():
     | {
-        origin: Airport;
-        destination: Airport;
+        tripOrigin: Airport;
+        tripDestination: Airport;
         tripDay: number;
         tripMonth: number;
         tripYear: number;
@@ -230,8 +243,8 @@ class AirportGraph {
     //End of error handling
 
     return {
-      origin: origin,
-      destination: destination,
+      tripOrigin: origin,
+      tripDestination: destination,
       tripDay: tripDay,
       tripMonth: tripMonth,
       tripYear: tripYear,
@@ -244,41 +257,36 @@ class AirportGraph {
     if (!inputs) {
       return;
     }
-    const { origin, destination, tripDay, tripMonth, tripYear, ticketQty } =
-      inputs;
+    const {
+      tripOrigin,
+      tripDestination,
+      tripDay,
+      tripMonth,
+      tripYear,
+      ticketQty,
+    } = inputs;
 
     const tripsAvailable: Flight[][] = [];
 
     //Search for direct flights
-    const originFlightsFilter1 = this.filterAirportFlightsByDate(
-      origin,
-      tripDay,
-      tripMonth,
-      tripYear
-    );
 
-    if (!originFlightsFilter1 || originFlightsFilter1.length === 0) {
+    const [originDirectFlights, originIndirectFlights] =
+      this.filterOriginFlights(
+        tripOrigin,
+        tripDestination,
+        tripDay,
+        tripMonth,
+        tripYear,
+        ticketQty
+      );
+
+    if (
+      originDirectFlights.length === 0 &&
+      originIndirectFlights.length === 0
+    ) {
       console.log("No flights were found");
       return;
     }
-
-    const originFlightsFilter2 = this.filterAirportFlightsByTicketAvailability(
-      originFlightsFilter1,
-      ticketQty
-    );
-
-    if (!originFlightsFilter2 || originFlightsFilter2.length === 0) {
-      console.log("No flights were found");
-      return;
-    }
-
-    const originDirectFlights = originFlightsFilter2.filter(
-      (flight) => flight.destination === destination
-    );
-
-    const originIndirectFlights = originFlightsFilter2.filter(
-      (flight) => flight.destination !== destination
-    );
 
     if (originDirectFlights.length > 0) {
       for (const flight of originDirectFlights) {
@@ -286,47 +294,23 @@ class AirportGraph {
       }
     }
 
-    if (!originIndirectFlights || originIndirectFlights.length === 0) {
+    if (originIndirectFlights.length === 0) {
       return tripsAvailable;
     }
 
     //Search for flight with one layover
 
     const layover1TotalIndirectFlights: Flight[][] = [];
+
     for (let i = 0; i < originIndirectFlights.length; i++) {
-      const layover1Filter1 = this.filterAirportFlightsByLayoverSuitability(
-        originIndirectFlights[i].destination,
-        originIndirectFlights[i].arrivingDate
-      );
-
-      if (!layover1Filter1 || layover1Filter1.length === 0) {
-        continue;
-      }
-
-      const layover1Filter2 = layover1Filter1.filter(
-        (flight) => flight.destination !== originIndirectFlights[i].origin
-      );
-
-      if (!layover1Filter2 || layover1Filter2.length === 0) {
-        continue;
-      }
-
-      const layover1Filter3 = this.filterAirportFlightsByTicketAvailability(
-        layover1Filter2,
-        ticketQty
-      );
-
-      if (!layover1Filter3 || layover1Filter3.length === 0) {
-        continue;
-      }
-
-      const layover1DirectFlights = layover1Filter3.filter(
-        (flight) => flight.destination === destination
-      );
-
-      const layover1IndirectFlights = layover1Filter3.filter(
-        (flight) => flight.destination !== destination
-      );
+      const [layover1DirectFlights, layover1IndirectFlights] =
+        this.filterLayoverFlights(
+          originIndirectFlights[i].origin,
+          originIndirectFlights[i].destination,
+          tripDestination,
+          originIndirectFlights[i].arrivingDate,
+          ticketQty
+        );
 
       if (layover1DirectFlights.length > 0) {
         for (const flight of layover1DirectFlights) {
@@ -344,27 +328,14 @@ class AirportGraph {
     //Search for flights with two layovers
 
     for (let i = 0; i < layover1TotalIndirectFlights.length; i++) {
-      const layover2Filter1 = this.filterAirportFlightsByLayoverSuitability(
-        layover1TotalIndirectFlights[i][1].destination,
-        layover1TotalIndirectFlights[i][1].arrivingDate
-      );
-
-      if (!layover2Filter1 || layover2Filter1.length === 0) {
-        continue;
-      }
-
-      const layover2Filter2 = this.filterAirportFlightsByTicketAvailability(
-        layover2Filter1,
-        ticketQty
-      );
-
-      if (!layover2Filter2 || layover2Filter2.length === 0) {
-        continue;
-      }
-
-      const layover2DirectFlights = layover2Filter2.filter(
-        (flight) => flight.destination === destination
-      );
+      const [layover2DirectFlights, layover2IndirectFlights] =
+        this.filterLayoverFlights(
+          layover1TotalIndirectFlights[i][1].origin,
+          layover1TotalIndirectFlights[i][1].destination,
+          tripDestination,
+          layover1TotalIndirectFlights[i][1].arrivingDate,
+          ticketQty
+        );
 
       if (layover2DirectFlights.length > 0) {
         for (const flight of layover2DirectFlights) {
@@ -376,8 +347,7 @@ class AirportGraph {
         }
       }
     }
-    console.log(tripsAvailable);
-    //console.log(layover1TotalIndirectFlights);
+    return tripsAvailable;
   }
 }
 
@@ -461,8 +431,8 @@ graph.addAirportFlightConnection(
   100,
   "SJO",
   "PTY",
-  new Date("2025-06-02T04:30:00Z"),
-  new Date("2025-06-02T05:00:00Z"),
+  new Date("2025-06-01T04:30:00Z"),
+  new Date("2025-06-01T05:00:00Z"),
   120
 );
 
@@ -509,8 +479,8 @@ graph.addAirportFlightConnection(
   100,
   "PTY",
   "MDE",
+  new Date("2025-06-01T18:00:00Z"),
   new Date("2025-06-01T20:00:00Z"),
-  new Date("2025-06-01T22:00:00Z"),
   120
 );
 
