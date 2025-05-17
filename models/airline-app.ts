@@ -1,4 +1,3 @@
-import { Itinerary } from "./itinerary";
 import {
   Airplane,
   Airport,

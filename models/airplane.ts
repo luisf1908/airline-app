@@ -86,16 +86,16 @@ export class Airplane {
     this.seats[i][j] = 1;
   }
 
-  clearSeats(): void {
-    this.seats.forEach((row) => {
-      row.fill(0);
-    });
-  }
-
-  clearSpecificSeat(row: number, seat: string): void {
+  clearSeat(row: number, seat: string): void {
     const [i, j] = this.convertSeatCodeToIndex(row, seat);
 
     this.seats[i][j] = 0;
+  }
+
+  clearAllSeats(): void {
+    this.seats.forEach((row) => {
+      row.fill(0);
+    });
   }
 
   isAirplaneFull(): boolean {

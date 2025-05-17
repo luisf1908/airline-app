@@ -42,7 +42,6 @@ export class FlightReservation {
 
     return reservationCode;
   }
-
   private getPassengersInformation(passengerQty: number): void {
     for (let i = 1; i <= passengerQty; i++) {
       if (i === 1) {
@@ -61,7 +60,6 @@ export class FlightReservation {
       console.log(`\n`);
     }
   }
-
   private displayPassengersInfo(): void {
     console.log(`//  Passengers information  //\n`);
     for (let i = 0; i < this.passengers.length; i++) {
@@ -94,7 +92,6 @@ export class FlightReservation {
     );
   }
   private addBaggageForEachPassenger(): void {
-    this.generateDefaultBaggageMatrix();
     if (this.baggage.length === 0) {
       throw new Error("Baggage and seat matrix is empty");
       return;
@@ -175,7 +172,6 @@ export class FlightReservation {
       }
     }
   }
-
   private displayBaggageInfo(): void {
     console.log(`//  Baggage information  //\n`);
     const [outboundTripOriginAirport, outboundTripDestinationAirport] =
@@ -224,7 +220,6 @@ export class FlightReservation {
     );
   }
   private reserveSeatForEachPassenger(): void {
-    this.generateDefaultSeatMatrix();
     const totalReservationFlights: Flight[] =
       this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
     for (let i = 0; i < totalReservationFlights.length; i++) {
@@ -252,7 +247,18 @@ export class FlightReservation {
       }
     }
   }
+  private clearReservationSeats(): void {
+    const totalReservationFlights: Flight[] =
+      this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
+    for (let i = 0; i < totalReservationFlights.length; i++) {
+      for (let j = 0; j < this.passengers.length; j++) {
+        const row = Number(this.seat[i][j].slice(-3, -1));
+        const seat = this.seat[i][j].slice(-1);
 
+        totalReservationFlights[i].airplane.clearSeat(row, seat);
+      }
+    }
+  }
   private displaySeatInfo(): void {
     console.log(`//  Seats information  //\n`);
     const totalReservationFlights: Flight[] =
@@ -331,6 +337,9 @@ export class FlightReservation {
     console.log(
       "************************  BAGGAGE SELECTION  ************************"
     );
+
+    this.generateDefaultBaggageMatrix();
+
     const userChoice1 = Number(
       prompt(
         "Type 1 to add baggage, or type any other character to skip to seat selection: "
@@ -346,6 +355,9 @@ export class FlightReservation {
     console.log(
       "************************  SEAT SELECTION  ************************"
     );
+
+    this.generateDefaultSeatMatrix();
+
     const userChoice2 = Number(
       prompt(
         "Type 1 to select seats, or type any other character to skip to confirm reservation: "
@@ -373,19 +385,91 @@ export class FlightReservation {
       return this;
     } else {
       console.log(`\nYour reservation has been cancelled`);
+      this.clearReservationSeats();
       return;
     }
   }
 
-  displayCompleteReservationInfo(): void {
+  private editReservation(): void {
     console.log(
-      "************************  RESERVATION INFORMATION  ************************\n"
+      "************************  EDIT RESERVATION  ************************\n"
     );
-    console.log(`Reservation code: ${this.reservationCode}\n`);
-    this.displayItineraryInfo();
-    this.displayPassengersInfo();
-    this.displayBaggageInfo();
-    this.displaySeatInfo();
+
+    while (true) {
+      console.log(
+        "1. Edit passengers information\n2. Edit baggage selection\n3. Edit seat selection\n4. Exit\n"
+      );
+      const userChoice = Number(prompt("Choose an option: "));
+
+      console.log("\n");
+
+      if (
+        userChoice < 1 ||
+        userChoice > 3 ||
+        !userChoice ||
+        isNaN(userChoice)
+      ) {
+        return;
+      }
+
+      if (userChoice === 1) {
+        const passengerQty: number = this.passengers.length;
+        this.passengers = [];
+        console.log(
+          "\n************************  PASSENGER INFORMATION  ************************"
+        );
+        console.log("\n");
+        this.getPassengersInformation(passengerQty);
+        console.log("\nPassengers information has been modified\n");
+      }
+
+      if (userChoice === 2) {
+        console.log(
+          "************************  BAGGAGE SELECTION  ************************"
+        );
+
+        this.addBaggageForEachPassenger();
+        console.log("\nBaggage selection has been modified\n");
+      }
+
+      if (userChoice === 3) {
+        console.log(
+          "************************  SEAT SELECTION  ************************"
+        );
+        this.clearReservationSeats();
+        this.reserveSeatForEachPassenger();
+        console.log("\nSeat selection has been modified\n");
+      }
+    }
+  }
+
+  displayCompleteReservationInfo(): void {
+    while (true) {
+      console.log(
+        "************************  RESERVATION INFORMATION  ************************\n"
+      );
+      console.log(`Reservation code: ${this.reservationCode}\n`);
+      this.displayItineraryInfo();
+      this.displayPassengersInfo();
+      this.displayBaggageInfo();
+      this.displaySeatInfo();
+
+      console.log("\n");
+
+      const userChoice1 = Number(
+        prompt(
+          "Type 1 to edit your reservation, or type any other character to exit to main menu: "
+        )
+      );
+      console.log("\n");
+
+      if (userChoice1 === 1) {
+        this.editReservation();
+        console.log("\n");
+      } else {
+        return;
+      }
+    }
   }
 }
 
