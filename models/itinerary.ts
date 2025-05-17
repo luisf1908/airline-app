@@ -4,11 +4,13 @@ export class Itinerary {
   outboundTrip: Flight[];
   returnTrip: Flight[];
   layovers: { hours: number; minutes: number }[][];
+  cost: number;
 
   constructor() {
     this.outboundTrip = [];
     this.returnTrip = [];
     this.layovers = [];
+    this.cost = 0;
   }
 
   getOriginAndDestinationAirportOfTrip(
@@ -61,12 +63,9 @@ export class Itinerary {
     return tripLayovers;
   }
 
-  /*generateItineraryLayovers(): void {
-    this.calculateLayovers(this.outboundTrip);
-    this.calculateLayovers(this.returnTrip);
-  }*/
-
   displayTripInformation(trip: Flight[]): void {
+    this.calculateTripCost(trip);
+
     const lastFlightIndex: number = trip.length - 1;
 
     const [origin, destination] =
@@ -116,6 +115,30 @@ export class Itinerary {
           `${trip[i].origin.airportId}: ${tripLayovers[j].hours}h ${tripLayovers[j].minutes}m`
         );
       }
+    }
+
+    console.log(`Trip cost: $${this.cost}`);
+  }
+
+  calculateTripCost(trip: Flight[]): void {
+    if (!trip || trip.length < 1) {
+      return;
+    }
+    const DISCOUNT_FACTOR_1_LAYOVER: number = 0.85;
+    const DISCOUNT_FACTOR_2_LAYOVER: number = 0.7;
+
+    const totalFlightsCost = trip.reduce((totalCost, currentFlight) => {
+      return totalCost + currentFlight.cost;
+    }, 0);
+
+    const averageFlightCost: number = totalFlightsCost / trip.length;
+
+    if (trip.length === 1) {
+      this.cost = averageFlightCost;
+    } else if (trip.length === 2) {
+      this.cost = averageFlightCost * DISCOUNT_FACTOR_1_LAYOVER;
+    } else if (trip.length === 3) {
+      this.cost = averageFlightCost * DISCOUNT_FACTOR_2_LAYOVER;
     }
   }
 }

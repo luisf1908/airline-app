@@ -13,7 +13,6 @@ export class Flight {
 
   constructor(
     flightNumber: number,
-    airplane: Airplane,
     cost: number,
     origin: Airport,
     destination: Airport,
@@ -22,7 +21,7 @@ export class Flight {
     duration: number
   ) {
     this.flightNumber = flightNumber;
-    this.airplane = airplane;
+    this.airplane = new Airplane("B787", 15);
     this.cost = cost;
     this.origin = origin;
     this.destination = destination;

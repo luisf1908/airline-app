@@ -92,6 +92,12 @@ export class Airplane {
     });
   }
 
+  clearSpecificSeat(row: number, seat: string): void {
+    const [i, j] = this.convertSeatCodeToIndex(row, seat);
+
+    this.seats[i][j] = 0;
+  }
+
   isAirplaneFull(): boolean {
     for (const row of this.seats) {
       for (const seat of row) {

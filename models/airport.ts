@@ -1,4 +1,4 @@
-import { Flight, City, Airplane, Country, State } from "./index";
+import { Flight, City, Airplane, Country, State, Itinerary } from "./index";
 import promptSync from "prompt-sync";
 const prompt = promptSync();
 
@@ -15,7 +15,6 @@ export class Airport {
 
   addFlight(
     flightNumber: number,
-    airplane: Airplane,
     cost: number,
     origin: Airport,
     destination: Airport,
@@ -26,7 +25,6 @@ export class Airport {
     this.flights.push(
       new Flight(
         flightNumber,
-        airplane,
         cost,
         origin,
         destination,
@@ -38,7 +36,7 @@ export class Airport {
   }
 }
 
-class AirportGraph {
+export class AirportGraph {
   airports: Map<string, Airport>;
 
   constructor() {
@@ -55,7 +53,6 @@ class AirportGraph {
 
   addAirportFlightConnection(
     flightNumber: number,
-    airplane: Airplane,
     cost: number,
     originId: string,
     destinationId: string,
@@ -72,7 +69,6 @@ class AirportGraph {
 
     origin.addFlight(
       flightNumber,
-      airplane,
       cost,
       origin,
       destination,
@@ -252,10 +248,13 @@ class AirportGraph {
     };
   }
 
-  searchFlight(): Flight[][] | undefined {
+  private searchFlight(): {
+    availableFlights: Flight[][] | undefined;
+    passengerQty: number | undefined;
+  } {
     const inputs = this.searchFlightsInputs();
     if (!inputs) {
-      return;
+      return { availableFlights: undefined, passengerQty: undefined };
     }
     const {
       tripOrigin,
@@ -285,7 +284,7 @@ class AirportGraph {
       originIndirectFlights.length === 0
     ) {
       console.log("No flights were found");
-      return;
+      return { availableFlights: undefined, passengerQty: undefined };
     }
 
     if (originDirectFlights.length > 0) {
@@ -295,7 +294,7 @@ class AirportGraph {
     }
 
     if (originIndirectFlights.length === 0) {
-      return tripsAvailable;
+      return { availableFlights: tripsAvailable, passengerQty: ticketQty };
     }
 
     //Search for flight with one layover
@@ -347,10 +346,75 @@ class AirportGraph {
         }
       }
     }
-    return tripsAvailable;
+    return { availableFlights: tripsAvailable, passengerQty: ticketQty };
+  }
+
+  private selectTrip(trips: Flight[][]): Itinerary | undefined {
+    const MAX_TRIPS_TO_DISPLAY: number = trips.length;
+
+    const tripsToDisplay = trips.slice(0, MAX_TRIPS_TO_DISPLAY);
+
+    const displayLoopLimit: number = Math.min(
+      tripsToDisplay.length,
+      MAX_TRIPS_TO_DISPLAY
+    );
+
+    console.log(
+      "\n\n************************  TRIPS AVAILABLE  ************************\n\n"
+    );
+
+    for (let i = 0; i < displayLoopLimit; i++) {
+      const itinerary = new Itinerary();
+      console.log(`//  Option ${i + 1}  //\n`);
+
+      itinerary.displayTripInformation(tripsToDisplay[i]);
+      console.log(`\n\n`);
+    }
+
+    const userChoice = Number(
+      prompt(
+        "Choose your trip option or press any key to return to the main menu: "
+      )
+    );
+
+    if (
+      !userChoice ||
+      isNaN(userChoice) ||
+      userChoice < 1 ||
+      userChoice > displayLoopLimit
+    ) {
+      console.log("Invalid option");
+
+      return;
+    }
+
+    const selectedItinerary = new Itinerary();
+    selectedItinerary.outboundTrip = tripsToDisplay[userChoice - 1];
+    selectedItinerary.calculateTripCost(selectedItinerary.outboundTrip);
+
+    return selectedItinerary;
+  }
+
+  tripSelection(): { itinerary: Itinerary; passengerQty: number } | undefined {
+    const { availableFlights, passengerQty } = this.searchFlight();
+    if (!availableFlights) {
+      return;
+    }
+    if (!passengerQty || passengerQty < 1) {
+      return;
+    }
+
+    const itinerary: Itinerary | undefined = this.selectTrip(availableFlights);
+
+    if (!itinerary) {
+      return;
+    }
+
+    return { itinerary, passengerQty };
   }
 }
 
+/*
 // Test code
 const country1 = new Country("Costa Rica");
 const country2 = new Country("Panama");
@@ -383,7 +447,6 @@ graph.addAirport("MEX", city5);
 //San Jose Flights
 graph.addAirportFlightConnection(
   1,
-  airplane1,
   100,
   "SJO",
   "BOG",
@@ -394,7 +457,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   2,
-  airplane1,
   100,
   "SJO",
   "BOG",
@@ -405,7 +467,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   3,
-  airplane1,
   100,
   "SJO",
   "MDE",
@@ -416,7 +477,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   4,
-  airplane1,
   100,
   "SJO",
   "MEX",
@@ -427,7 +487,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   5,
-  airplane1,
   100,
   "SJO",
   "PTY",
@@ -440,7 +499,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   6,
-  airplane1,
   100,
   "BOG",
   "MDE",
@@ -451,7 +509,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   7,
-  airplane1,
   100,
   "BOG",
   "MDE",
@@ -462,7 +519,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   8,
-  airplane1,
   100,
   "BOG",
   "SJO",
@@ -475,7 +531,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   9,
-  airplane1,
   100,
   "PTY",
   "MDE",
@@ -486,7 +541,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   10,
-  airplane1,
   100,
   "PTY",
   "SJO",
@@ -497,7 +551,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   11,
-  airplane1,
   100,
   "PTY",
   "BOG",
@@ -510,7 +563,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   12,
-  airplane1,
   100,
   "MEX",
   "SJO",
@@ -521,7 +573,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   13,
-  airplane1,
   100,
   "MEX",
   "PTY",
@@ -534,7 +585,6 @@ graph.addAirportFlightConnection(
 
 graph.addAirportFlightConnection(
   14,
-  airplane1,
   100,
   "MDE",
   "BOG",
@@ -543,4 +593,9 @@ graph.addAirportFlightConnection(
   120
 );
 
-console.log(graph.searchFlight());
+const result = graph.tripSelection();
+if (result) {
+  const { itinerary, passengerQty } = result;
+  console.log(itinerary);
+}
+*/

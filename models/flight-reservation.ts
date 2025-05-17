@@ -13,6 +13,9 @@ import promptSync from "prompt-sync";
 const prompt = promptSync();
 
 export class FlightReservation {
+  CARRY_ON_PRICE: number = 40;
+  CHECKED_BAG_PRICE: number = 50;
+
   reservationCode: string;
   passengers: Passenger[];
   baggage: Baggage[][]; // Matrix where rows represent trips (outbound and return) and columns represents passengers
@@ -43,19 +46,35 @@ export class FlightReservation {
   private getPassengersInformation(passengerQty: number): void {
     for (let i = 1; i <= passengerQty; i++) {
       if (i === 1) {
-        console.log(`Passenger ${i} (Reservation Holder)`);
+        console.log(`//  Passenger ${i} (Reservation Holder)  //`);
       } else {
-        console.log(`Passenger ${i}`);
+        console.log(`//  Passenger ${i}  //  `);
       }
       const firstName = prompt("First name: ");
       const lastName = prompt("Last name: ");
       const email = prompt("Email: ");
       const passportId = prompt("Passport ID: ");
-      console.log(`\n`);
 
       this.passengers.push(
         new Passenger(firstName, lastName, email, passportId)
       );
+      console.log(`\n`);
+    }
+  }
+
+  private displayPassengersInfo(): void {
+    console.log(`//  Passengers information  //\n`);
+    for (let i = 0; i < this.passengers.length; i++) {
+      if (i === 0) {
+        console.log(`* Passenger ${i + 1} (Reservation Holder) *`);
+      } else {
+        console.log(`* Passenger ${i + 1} *`);
+      }
+      console.log(`First name: ${this.passengers[i].firstName}`);
+      console.log(`Last name: ${this.passengers[i].lastName}`);
+      console.log(`Email: ${this.passengers[i].email}`);
+      console.log(`Passport ID: ${this.passengers[i].passportId}`);
+      console.log("\n\n");
     }
   }
 
@@ -98,11 +117,11 @@ export class FlightReservation {
     for (let i = 0; i < tripsQty; i++) {
       if (i === 0) {
         console.log(
-          `Flight from ${outboundTripOriginAirport?.airportId} to ${outboundTripDestinationAirport?.airportId}`
+          `//  Flight from ${outboundTripOriginAirport?.airportId} to ${outboundTripDestinationAirport?.airportId}  //`
         );
       } else {
         console.log(
-          `Flight from ${returnTripOriginAirport?.airportId} to ${returnTripDestinationAirport?.airportId}`
+          `//  Flight from ${returnTripOriginAirport?.airportId} to ${returnTripDestinationAirport?.airportId}  //`
         );
       }
 
@@ -110,11 +129,13 @@ export class FlightReservation {
         console.log(
           `Want to add baggage for ${this.passengers[j].firstName} ${this.passengers[j].lastName}?\n1. Yes\n2. Skip to next passenger`
         );
-        const userChoice1 = Number(prompt(""));
+        const userChoice1 = Number(prompt("Choose option: "));
         if (userChoice1 === 1) {
           this.addBaggage(i, j);
         }
+        console.log("\n");
       }
+      console.log("\n");
     }
   }
   private addBaggage(flightIndex: number, passengerIndex: number): void {
@@ -125,7 +146,10 @@ export class FlightReservation {
       checked: 0,
     };
     while (addAnotherBaggage) {
-      console.log("1. Carry On\n2. Checked");
+      console.log(`\nBaggage types`);
+      console.log(
+        `1. Carry On ($${this.CARRY_ON_PRICE})\n2. Checked ($${this.CHECKED_BAG_PRICE})`
+      );
       const baggageType = Number(
         prompt("Choose the baggage you want to add: ")
       );
@@ -143,12 +167,51 @@ export class FlightReservation {
         baggage.checked = baggageQty;
       }
 
-      console.log("Press:\n1. Add more baggage\n2. Exit baggage menu");
-      const userChoice = Number(prompt(""));
+      console.log("\nWant to: \n1. Add more baggage\n2. Exit baggage menu");
+      const userChoice = Number(prompt("Choose option: "));
       if (userChoice === 2) {
         addAnotherBaggage = false;
         this.baggage[flightIndex][passengerIndex] = baggage;
       }
+    }
+  }
+
+  private displayBaggageInfo(): void {
+    console.log(`//  Baggage information  //\n`);
+    const [outboundTripOriginAirport, outboundTripDestinationAirport] =
+      this.itinerary.getOriginAndDestinationAirportOfTrip(
+        this.itinerary.outboundTrip
+      );
+    const [returnTripOriginAirport, returnTripDestinationAirport] =
+      this.itinerary.getOriginAndDestinationAirportOfTrip(
+        this.itinerary.returnTrip
+      );
+
+    let tripsQty: number = 0;
+    if (this.itinerary.returnTrip.length > 0) {
+      tripsQty = 2;
+    } else {
+      tripsQty = 1;
+    }
+    for (let i = 0; i < tripsQty; i++) {
+      if (i === 0) {
+        console.log(
+          `* Flight from ${outboundTripOriginAirport?.airportId} to ${outboundTripDestinationAirport?.airportId} *`
+        );
+      } else {
+        console.log(
+          `* Flight from ${returnTripOriginAirport?.airportId} to ${returnTripDestinationAirport?.airportId} *`
+        );
+      }
+
+      for (let j = 0; j < this.passengers.length; j++) {
+        console.log(
+          ` Baggage for ${this.passengers[j].firstName} ${this.passengers[j].lastName}:`
+        );
+        console.log(`   Carry On: ${this.baggage[i][j].carryOn}`);
+        console.log(`   Checked: ${this.baggage[i][j].checked}`);
+      }
+      console.log("\n");
     }
   }
 
@@ -166,67 +229,75 @@ export class FlightReservation {
       this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
     for (let i = 0; i < totalReservationFlights.length; i++) {
       console.log(
-        `Flight from ${totalReservationFlights[i].origin.airportId} to ${totalReservationFlights[i].destination.airportId}`
+        `\n//  Flight from ${totalReservationFlights[i].origin.airportId} to ${totalReservationFlights[i].destination.airportId}  //`
       );
       for (let j = 0; j < this.passengers.length; j++) {
         console.log(
           `Want to reserve a seat for ${this.passengers[j].firstName} ${this.passengers[j].lastName}?\n1. Yes\n2. Skip to next passenger`
         );
-        const userChoice1 = Number(prompt(""));
+        const userChoice1 = Number(prompt("Choose option: "));
         if (userChoice1 === 1) {
+          console.log(`\nBlueHorizon Airplane`);
           totalReservationFlights[i].airplane.displaySeats();
-          console.log("Type the row and seat you want to reserve");
+          console.log("\nChoose the row and seat you want to reserve");
           const row = Number(prompt("Row: "));
           const seat = prompt("Seat letter: ");
           totalReservationFlights[i].airplane.reserveSeat(row, seat);
+          console.log(`\nSeat ${row}${seat.toUpperCase()} has been reserved`);
           totalReservationFlights[i].airplane.displaySeats();
+          console.log("\n");
           this.seat[i][j] = `${row}${seat.toUpperCase()}`;
         }
+        console.log("\n");
       }
     }
   }
 
-  createReservation(
-    itinerary: Itinerary,
-    passengerQty: number
-  ): FlightReservation | null {
-    this.itinerary = itinerary;
-
-    //Passenger Information
-    console.log("************************************************");
-    console.log("Passenger Information\n");
-    this.getPassengersInformation(passengerQty);
-    console.log("************************************************");
-
-    //Baggage selection
-    console.log("************************************************");
-    console.log(
-      "1. Add baggage\nType any other character to skip to seat selection"
-    );
-    const userChoice1 = Number(prompt(""));
-    if (userChoice1 === 1) {
-      console.log("************************************************");
-      console.log("Baggage Selection");
-      this.addBaggageForEachPassenger();
-      console.log("************************************************");
+  private displaySeatInfo(): void {
+    console.log(`//  Seats information  //\n`);
+    const totalReservationFlights: Flight[] =
+      this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
+    for (let i = 0; i < totalReservationFlights.length; i++) {
+      console.log(
+        `* Flight from ${totalReservationFlights[i].origin.airportId} to ${totalReservationFlights[i].destination.airportId} *`
+      );
+      for (let j = 0; j < this.passengers.length; j++) {
+        console.log(
+          ` Seat for ${this.passengers[j].firstName} ${this.passengers[j].lastName}: ${this.seat[i][j]}`
+        );
+      }
+      console.log("\n");
     }
+    console.log("\n\n");
+  }
 
-    //Seat selection
-    console.log("************************************************");
-    console.log(
-      "1. Select seats\nType any other character to skip to confirm reservation"
+  private calculateTotalTripCost(): void {
+    const flightsCost: number = this.itinerary.cost * this.passengers.length;
+
+    const baggageCost = this.baggage.reduce(
+      (totalCost, currentTripBaggages) => {
+        return (
+          totalCost +
+          currentTripBaggages.reduce(
+            (totalTripBaggageCost, currentPassengerBaggage) => {
+              return (
+                totalTripBaggageCost +
+                currentPassengerBaggage.carryOn * this.CARRY_ON_PRICE +
+                currentPassengerBaggage.checked * this.CHECKED_BAG_PRICE
+              );
+            },
+            0
+          )
+        );
+      },
+      0
     );
-    const userChoice2 = Number(prompt(""));
-    if (userChoice2 === 1) {
-      console.log("************************************************");
-      console.log("Seat Selection");
-      this.reserveSeatForEachPassenger();
-      console.log("************************************************");
-    }
 
-    //Confirm reservation
-    console.log("************************************************");
-    console.log("Reservation summary\n");
+    this.cost = flightsCost + baggageCost;
+  }
+
+  private displayItineraryInfo(): void {
+    console.log(`//  Itinerary  //\n`);
     console.log("Outbound Trip");
     this.itinerary.displayTripInformation(this.itinerary.outboundTrip);
 
@@ -235,25 +306,91 @@ export class FlightReservation {
       this.itinerary.displayTripInformation(this.itinerary.returnTrip);
     }
 
-    console.log("************************************************");
-    console.log(`Total cost: $${this.cost}\n`);
+    this.calculateTotalTripCost();
 
-    console.log("************************************************");
+    console.log("\n\n************************************************");
+    console.log(`Total cost: $${this.cost}`);
+    console.log("************************************************\n\n");
+  }
+
+  createReservation(
+    itinerary: Itinerary,
+    passengerQty: number
+  ): FlightReservation | undefined {
+    this.itinerary = itinerary;
+
+    //Passenger Information
     console.log(
-      "1. Confirm reservation\nType any other character to cancel reservation"
+      "\n************************  PASSENGER INFORMATION  ************************"
     );
-    const userChoice3 = Number(prompt(""));
+    console.log("\n");
+    this.getPassengersInformation(passengerQty);
+    console.log("\n");
+
+    //Baggage selection
+    console.log(
+      "************************  BAGGAGE SELECTION  ************************"
+    );
+    const userChoice1 = Number(
+      prompt(
+        "Type 1 to add baggage, or type any other character to skip to seat selection: "
+      )
+    );
+    console.log("\n");
+
+    if (userChoice1 === 1) {
+      this.addBaggageForEachPassenger();
+    }
+
+    //Seat selection
+    console.log(
+      "************************  SEAT SELECTION  ************************"
+    );
+    const userChoice2 = Number(
+      prompt(
+        "Type 1 to select seats, or type any other character to skip to confirm reservation: "
+      )
+    );
+    if (userChoice2 === 1) {
+      this.reserveSeatForEachPassenger();
+      console.log("\n");
+    }
+
+    //Confirm reservation
+    console.log(
+      "\n************************  RESERVATION SUMMARY  ************************"
+    );
+    this.displayItineraryInfo();
+    const userChoice3 = Number(
+      prompt(
+        "Type 1 to confirm reservation, or type any other character to cancel reservation: "
+      )
+    );
     if (userChoice3 === 1) {
       this.reservationCode = this.generateReservationCode();
-      console.log(`Congratulations, your reservation has been confirmed`);
+      console.log(`\nCongratulations, your reservation has been confirmed!!`);
       console.log(`Reservation code: ${this.reservationCode}`);
       return this;
     } else {
-      return null;
+      console.log(`\nYour reservation has been cancelled`);
+      return;
     }
+  }
+
+  displayCompleteReservationInfo(): void {
+    console.log(
+      "************************  RESERVATION INFORMATION  ************************\n"
+    );
+    console.log(`Reservation code: ${this.reservationCode}\n`);
+    this.displayItineraryInfo();
+    this.displayPassengersInfo();
+    this.displayBaggageInfo();
+    this.displaySeatInfo();
   }
 }
 
+/*
+//Test Code
 const p1 = new Passenger("Luis", "Murillo", "luisf1908@gmail.com", "116150349");
 const p2 = new Passenger(
   "Martha",
@@ -262,7 +399,7 @@ const p2 = new Passenger(
   "116150349"
 );
 
-/*const country1 = new Country("Costa Rica");
+const country1 = new Country("Costa Rica");
 const state1 = new State("San Jose", country1);
 const city1 = new City("Montes de Oca", state1);
 
@@ -276,7 +413,6 @@ const airplane3 = new Airplane("A987", 12);
 
 const flight1 = new Flight(
   876,
-  airplane1,
   100,
   airport1,
   airport2,
@@ -286,7 +422,6 @@ const flight1 = new Flight(
 );
 const flight2 = new Flight(
   924,
-  airplane2,
   100,
   airport2,
   airport3,
@@ -296,7 +431,6 @@ const flight2 = new Flight(
 );
 const flight3 = new Flight(
   545,
-  airplane3,
   100,
   airport3,
   airport1,
@@ -310,12 +444,8 @@ const r1 = new FlightReservation();
 const i1 = new Itinerary();
 
 i1.outboundTrip.push(flight1, flight2);
-i1.returnTrip.push(flight3);
+//i1.returnTrip.push(flight3);
 
 r1.createReservation(i1, 2);
-
-console.log(r1.reservationCode);
-console.log(r1.passengers);
-console.log(r1.baggage);
-console.log(r1.seat);
-console.log(r1.itinerary);*/
+r1.displayCompleteReservationInfo();
+*/

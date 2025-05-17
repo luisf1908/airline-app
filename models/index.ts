@@ -5,5 +5,5 @@ export { Itinerary } from "./itinerary";
 export { Flight } from "./flight";
 export { FlightTicket } from "./flight-ticket";
 export { City, State, Country } from "./location";
-export { Airport } from "./airport";
+export { Airport, AirportGraph } from "./airport";
 export { Airplane } from "./airplane";
