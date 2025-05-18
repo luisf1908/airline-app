@@ -191,6 +191,8 @@ export class AirportGraph {
     const tripYear = Number(prompt("Year: "));
     const ticketQty = Number(prompt("Ticket quantity: "));
 
+    console.log("\n");
+
     const origin = this.getAirport(originId);
     const destination = this.getAirport(destinationId);
 

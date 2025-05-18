@@ -84,6 +84,14 @@ export class Flight {
     return [monthString, day, year, hour, minutes];
   }
 
+  removeReservationTickets(reservationCode: string): void {
+    const newTicketsArray = this.tickets.filter(
+      (ticket) => ticket.reservation.reservationCode !== reservationCode
+    );
+
+    this.tickets = newTicketsArray;
+  }
+
   areTicketsAvailable(ticketQty: number): boolean {
     const totalTickets = this.airplane.SEATS_PER_ROW * this.airplane.rows;
 

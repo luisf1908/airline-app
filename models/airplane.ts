@@ -80,6 +80,21 @@ export class Airplane {
     return [i, j];
   }
 
+  getAvailableSeats(): string[] {
+    const availableSeats: string[] = [];
+
+    for (let i = 0; i < this.seats.length; i++) {
+      for (let j = 0; j < this.SEATS_PER_ROW; j++) {
+        if (this.seats[i][j] === 1) {
+          continue;
+        } else {
+          availableSeats.push(this.convertIndexToSeatCode(i, j));
+        }
+      }
+    }
+    return availableSeats;
+  }
+
   reserveSeat(row: number, seat: string): void {
     const [i, j] = this.convertSeatCodeToIndex(row, seat);
 

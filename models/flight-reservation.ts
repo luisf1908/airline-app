@@ -7,6 +7,7 @@ import {
   City,
   Country,
   State,
+  FlightTicket,
 } from "./index";
 import { Baggage } from "../types";
 import promptSync from "prompt-sync";
@@ -319,6 +320,26 @@ export class FlightReservation {
     console.log("************************************************\n\n");
   }
 
+  private generateFlightTickets(): void {
+    const totalReservationFlights: Flight[] =
+      this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
+    for (let i = 0; i < totalReservationFlights.length; i++) {
+      totalReservationFlights[i].removeReservationTickets(this.reservationCode);
+      for (let j = 0; j < this.passengers.length; j++) {
+        const flightTicket = new FlightTicket(
+          this.passengers[j],
+          this,
+          this.seat[i][j]
+        );
+        totalReservationFlights[i].tickets.push(flightTicket);
+      }
+    }
+  }
+
+  checkIn(): void {
+    this.displayCompleteReservationInfo();
+  }
+
   createReservation(
     itinerary: Itinerary,
     passengerQty: number
@@ -382,6 +403,7 @@ export class FlightReservation {
       this.reservationCode = this.generateReservationCode();
       console.log(`\nCongratulations, your reservation has been confirmed!!`);
       console.log(`Reservation code: ${this.reservationCode}`);
+      this.generateFlightTickets();
       return this;
     } else {
       console.log(`\nYour reservation has been cancelled`);
@@ -465,6 +487,7 @@ export class FlightReservation {
 
       if (userChoice1 === 1) {
         this.editReservation();
+        this.generateFlightTickets();
         console.log("\n");
       } else {
         return;
@@ -473,7 +496,6 @@ export class FlightReservation {
   }
 }
 
-/*
 //Test Code
 const p1 = new Passenger("Luis", "Murillo", "luisf1908@gmail.com", "116150349");
 const p2 = new Passenger(
@@ -531,5 +553,8 @@ i1.outboundTrip.push(flight1, flight2);
 //i1.returnTrip.push(flight3);
 
 r1.createReservation(i1, 2);
+console.log(r1.itinerary.outboundTrip[0].tickets);
+console.log(r1.itinerary.outboundTrip[1].tickets);
 r1.displayCompleteReservationInfo();
-*/
+console.log(r1.itinerary.outboundTrip[0].tickets);
+console.log(r1.itinerary.outboundTrip[1].tickets);

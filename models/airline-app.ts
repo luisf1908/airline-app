@@ -98,6 +98,8 @@ export class AirlineApp {
     flightReservation.displayCompleteReservationInfo();
   }
 
+  checkIn(): void {}
+
   initiateProgram(): void {
     console.log("Welcome to BlueHorizon Airways\n");
     console.log("The best fares to your next horizon\n");
@@ -139,6 +141,7 @@ export class AirlineApp {
   }
 }
 
+/*
 //Test Code
 
 const country1 = new Country("Costa Rica");
@@ -320,3 +323,4 @@ app.airportGraph.addAirportFlightConnection(
 );
 
 app.initiateProgram();
+*/

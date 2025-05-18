@@ -6,18 +6,20 @@ export class FlightTicket {
   seat: string;
   boardingGroup: string;
   gate: string;
+  isCheckedIn: boolean;
 
   constructor(
     passenger: Passenger,
     reservation: FlightReservation,
-    seat: string,
-    boardingGroup: string,
-    gate: string
+    seat: string
   ) {
     this.reservation = reservation;
     this.passenger = passenger;
     this.seat = seat;
-    this.boardingGroup = boardingGroup;
-    this.gate = gate;
+    this.boardingGroup = "";
+    this.gate = "";
+    this.isCheckedIn = false;
   }
+
+  printBoardingPass(): void {}
 }
