@@ -1,4 +1,12 @@
-import { Airport, FlightTicket, Airplane, Country, State, City } from "./index";
+import {
+  Airport,
+  FlightTicket,
+  Airplane,
+  Country,
+  State,
+  City,
+  Passenger,
+} from "./index";
 
 export class Flight {
   flightNumber: number;
@@ -10,6 +18,7 @@ export class Flight {
   arrivingDate: Date;
   duration: number; // in minutes
   tickets: FlightTicket[];
+  departureGate: number;
 
   constructor(
     flightNumber: number,
@@ -29,6 +38,7 @@ export class Flight {
     this.arrivingDate = arrivingDate;
     this.duration = duration;
     this.tickets = [];
+    this.departureGate = Math.floor(Math.random() * origin.gatesQty);
   }
 
   deconstructDateDataType(
@@ -101,6 +111,21 @@ export class Flight {
       return true;
     } else {
       return false;
+    }
+  }
+
+  getTicket(passenger: Passenger): FlightTicket | undefined {
+    const flightTicket = this.tickets.filter(
+      (ticket) =>
+        ticket.passenger.passportId === passenger.passportId &&
+        ticket.passenger.firstName === passenger.firstName &&
+        ticket.passenger.lastName === passenger.lastName
+    );
+
+    if (flightTicket.length === 1) {
+      return flightTicket[0];
+    } else {
+      return;
     }
   }
 

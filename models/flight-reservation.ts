@@ -256,6 +256,10 @@ export class FlightReservation {
         const row = Number(this.seat[i][j].slice(-3, -1));
         const seat = this.seat[i][j].slice(-1);
 
+        if (row === 0 && seat === "") {
+          return;
+        }
+
         totalReservationFlights[i].airplane.clearSeat(row, seat);
       }
     }
@@ -276,6 +280,20 @@ export class FlightReservation {
       console.log("\n");
     }
     console.log("\n\n");
+  }
+  private assignRandomSeat(flight: Flight): string | undefined {
+    const totalReservationFlights: Flight[] =
+      this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
+
+    const airplaneSeatsAvailable: string[] =
+      flight.airplane.getAvailableSeats();
+
+    const randomSeat = airplaneSeatsAvailable.pop();
+
+    if (!randomSeat) {
+      return;
+    }
+    return randomSeat;
   }
 
   private calculateTotalTripCost(): void {
@@ -327,8 +345,9 @@ export class FlightReservation {
       totalReservationFlights[i].removeReservationTickets(this.reservationCode);
       for (let j = 0; j < this.passengers.length; j++) {
         const flightTicket = new FlightTicket(
-          this.passengers[j],
           this,
+          totalReservationFlights[i],
+          this.passengers[j],
           this.seat[i][j]
         );
         totalReservationFlights[i].tickets.push(flightTicket);
@@ -337,7 +356,84 @@ export class FlightReservation {
   }
 
   checkIn(): void {
-    this.displayCompleteReservationInfo();
+    console.log(
+      "************************  CHECK-IN ONLINE  ************************\n"
+    );
+
+    const totalReservationFlights: Flight[] =
+      this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
+
+    console.log("Select the flight you want to check-in: \n");
+    for (let i = 1; i <= totalReservationFlights.length; i++) {
+      console.log(
+        `${i}. ${totalReservationFlights[i - 1].origin.city.name} to ${
+          totalReservationFlights[i - 1].destination.city.name
+        }`
+      );
+    }
+    console.log("\n");
+    const userChoice1 = Number(prompt(`Choose an option: `));
+    console.log("\n");
+
+    if (
+      !userChoice1 ||
+      isNaN(userChoice1) ||
+      userChoice1 < 1 ||
+      userChoice1 > totalReservationFlights.length
+    ) {
+      console.log("Invalid option");
+      return;
+    }
+
+    console.log("Select the passenger you want to check-in: \n");
+    for (let i = 1; i <= this.passengers.length; i++) {
+      console.log(
+        `${i}. ${this.passengers[i - 1].firstName} ${
+          this.passengers[i - 1].lastName
+        }`
+      );
+    }
+    console.log("\n");
+    const userChoice2 = Number(prompt(`Choose an option: `));
+    console.log("\n");
+
+    if (
+      !userChoice2 ||
+      isNaN(userChoice2) ||
+      userChoice2 < 1 ||
+      userChoice2 > this.passengers.length
+    ) {
+      console.log("Invalid option");
+      return;
+    }
+
+    const flightIndex: number = userChoice1 - 1;
+    const passengerIndex: number = userChoice2 - 1;
+
+    const flightTicket = totalReservationFlights[flightIndex].getTicket(
+      this.passengers[passengerIndex]
+    );
+    if (!flightTicket) {
+      return;
+    }
+    if (this.seat[flightIndex][passengerIndex] === "") {
+      const randomSeat = this.assignRandomSeat(
+        totalReservationFlights[flightIndex]
+      );
+      if (randomSeat) {
+        this.seat[flightIndex][passengerIndex] = randomSeat;
+        flightTicket.seat = randomSeat;
+      }
+    }
+
+    flightTicket.printBoardingPass();
+    flightTicket.isCheckedIn = true;
+    console.log("\n");
+
+    const userChoice3 = Number(
+      prompt("Type any character to return to main menu: ")
+    );
+    console.log("\n");
   }
 
   createReservation(
@@ -496,6 +592,7 @@ export class FlightReservation {
   }
 }
 
+/*
 //Test Code
 const p1 = new Passenger("Luis", "Murillo", "luisf1908@gmail.com", "116150349");
 const p2 = new Passenger(
@@ -506,12 +603,25 @@ const p2 = new Passenger(
 );
 
 const country1 = new Country("Costa Rica");
-const state1 = new State("San Jose", country1);
-const city1 = new City("Montes de Oca", state1);
+const country2 = new Country("Panama");
+const country3 = new Country("Colombia");
+const country4 = new Country("Mexico");
 
-const airport1 = new Airport("SJO", city1);
-const airport2 = new Airport("PNA", city1);
-const airport3 = new Airport("MDE", city1);
+const state1 = new State("San Jose", country1);
+const state2 = new State("Chiriqui", country2);
+const state3 = new State("Antioquia", country3);
+const state4 = new State("Bogotá", country3);
+const state5 = new State("Mexico DF", country4);
+
+const city1 = new City("San Jose", state1);
+const city2 = new City("Panama City", state2);
+const city3 = new City("Medellin", state3);
+const city4 = new City("Bogotá", state4);
+const city5 = new City("Mexico DF", state4);
+
+const airport1 = new Airport("SJO", city1, 20);
+const airport2 = new Airport("PNA", city2, 20);
+const airport3 = new Airport("MDE", city3, 20);
 
 const airplane1 = new Airplane("A579", 12);
 const airplane2 = new Airplane("A684", 12);
@@ -556,5 +666,5 @@ r1.createReservation(i1, 2);
 console.log(r1.itinerary.outboundTrip[0].tickets);
 console.log(r1.itinerary.outboundTrip[1].tickets);
 r1.displayCompleteReservationInfo();
-console.log(r1.itinerary.outboundTrip[0].tickets);
-console.log(r1.itinerary.outboundTrip[1].tickets);
+r1.checkIn();
+*/

@@ -5,11 +5,13 @@ const prompt = promptSync();
 export class Airport {
   airportId: string;
   city: City;
+  gatesQty: number;
   flights: Flight[];
 
-  constructor(airportId: string, city: City) {
+  constructor(airportId: string, city: City, gatesQty: number) {
     this.airportId = airportId;
     this.city = city;
+    this.gatesQty = gatesQty;
     this.flights = [];
   }
 
@@ -43,8 +45,8 @@ export class AirportGraph {
     this.airports = new Map();
   }
 
-  addAirport(airportId: string, city: City): void {
-    this.airports.set(airportId, new Airport(airportId, city));
+  addAirport(airportId: string, city: City, gatesQty: number): void {
+    this.airports.set(airportId, new Airport(airportId, city, gatesQty));
   }
 
   getAirport(airportId: string): Airport | undefined {

@@ -98,7 +98,32 @@ export class AirlineApp {
     flightReservation.displayCompleteReservationInfo();
   }
 
-  checkIn(): void {}
+  checkIn(): void {
+    console.log(
+      "************************  CHECK-IN  ************************\n"
+    );
+
+    const reservationCode: string = prompt(
+      "Enter the reservation code: "
+    ).toUpperCase();
+
+    const lastName: string = prompt(
+      "Enter the reservation's holder last name: "
+    );
+
+    if (!this.isReservationInfoValid(reservationCode, lastName)) {
+      console.log("\nReservation not found");
+      return;
+    }
+    const flightReservation = this.reservations.get(reservationCode);
+
+    if (!flightReservation) {
+      return;
+    }
+
+    console.log("\n");
+    flightReservation.checkIn();
+  }
 
   initiateProgram(): void {
     console.log("Welcome to BlueHorizon Airways\n");
@@ -137,11 +162,14 @@ export class AirlineApp {
       if (mainMenuChoice === 2) {
         this.checkFlightReservation();
       }
+
+      if (mainMenuChoice === 3) {
+        this.checkIn();
+      }
     }
   }
 }
 
-/*
 //Test Code
 
 const country1 = new Country("Costa Rica");
@@ -155,8 +183,8 @@ const state3 = new State("Antioquia", country3);
 const state4 = new State("Bogotá", country3);
 const state5 = new State("Mexico DF", country4);
 
-const city1 = new City("Montes de Oca", state1);
-const city2 = new City("David", state2);
+const city1 = new City("San Jose", state1);
+const city2 = new City("Panama City", state2);
 const city3 = new City("Medellin", state3);
 const city4 = new City("Bogotá", state4);
 const city5 = new City("Mexico DF", state4);
@@ -167,11 +195,11 @@ const airplane3 = new Airplane("A987", 12);
 
 const app = new AirlineApp();
 
-app.airportGraph.addAirport("SJO", city1);
-app.airportGraph.addAirport("PTY", city2);
-app.airportGraph.addAirport("MDE", city3);
-app.airportGraph.addAirport("BOG", city4);
-app.airportGraph.addAirport("MEX", city5);
+app.airportGraph.addAirport("SJO", city1, 20);
+app.airportGraph.addAirport("PTY", city2, 20);
+app.airportGraph.addAirport("MDE", city3, 20);
+app.airportGraph.addAirport("BOG", city4, 20);
+app.airportGraph.addAirport("MEX", city5, 20);
 
 //San Jose Flights
 app.airportGraph.addAirportFlightConnection(
@@ -323,4 +351,3 @@ app.airportGraph.addAirportFlightConnection(
 );
 
 app.initiateProgram();
-*/
