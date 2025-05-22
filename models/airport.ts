@@ -45,6 +45,17 @@ export class AirportGraph {
     this.airports = new Map();
   }
 
+  private displayAirports(): void {
+    console.log("//  Airports available  //\n");
+
+    for (const [airportId, airport] of this.airports.entries()) {
+      console.log(
+        `${airportId}: ${airport.city.name}, ${airport.city.stateId.countryId.name}`
+      );
+    }
+    console.log("\n");
+  }
+
   addAirport(airportId: string, city: City, gatesQty: number): void {
     this.airports.set(airportId, new Airport(airportId, city, gatesQty));
   }
@@ -256,6 +267,8 @@ export class AirportGraph {
     availableFlights: Flight[][] | undefined;
     passengerQty: number | undefined;
   } {
+    this.displayAirports();
+
     const inputs = this.searchFlightsInputs();
     if (!inputs) {
       return { availableFlights: undefined, passengerQty: undefined };
