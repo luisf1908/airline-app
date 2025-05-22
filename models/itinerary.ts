@@ -3,13 +3,11 @@ import { Flight, Airport, Airplane, Country, State, City } from "./index";
 export class Itinerary {
   outboundTrip: Flight[];
   returnTrip: Flight[];
-  layovers: { hours: number; minutes: number }[][];
   cost: number;
 
   constructor() {
     this.outboundTrip = [];
     this.returnTrip = [];
-    this.layovers = [];
     this.cost = 0;
   }
 
@@ -96,7 +94,7 @@ export class Itinerary {
     ] = trip[0].deconstructDateDataType(trip[lastFlightIndex].arrivingDate);
 
     console.log(
-      `${origin?.airportId} to ${destination?.airportId}\n\n${departureMonth} ${departureDay}, ${departureYear}\n`
+      `${origin?.city.name} (${origin?.airportId}) to ${destination?.city.name} (${destination?.airportId})\n\n${departureMonth} ${departureDay}, ${departureYear}\n`
     );
     console.log(
       `${departureHour}:${departureMinutes}  ..............................  ${arrivingHour}:${arrivingMinutes}`
@@ -117,7 +115,7 @@ export class Itinerary {
       }
     }
 
-    console.log(`Trip cost: $${this.cost}`);
+    console.log(`\nTrip cost: $${this.cost}`);
   }
 
   calculateTripCost(trip: Flight[]): void {

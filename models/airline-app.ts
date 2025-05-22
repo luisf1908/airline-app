@@ -20,7 +20,10 @@ export class AirlineApp {
     this.reservations = new Map<string, FlightReservation>();
   }
 
-  isReservationInfoValid(reservationCode: string, lastName: string): boolean {
+  private isReservationInfoValid(
+    reservationCode: string,
+    lastName: string
+  ): boolean {
     if (!this.reservations.has(reservationCode)) {
       return false;
     }
@@ -35,7 +38,7 @@ export class AirlineApp {
     return true;
   }
 
-  makeFlightReservation(): void {
+  private makeFlightReservation(): void {
     console.log(
       "************************  SEARCH FLIGHT  ************************\n"
     );
@@ -70,7 +73,7 @@ export class AirlineApp {
     return;
   }
 
-  checkFlightReservation(): void {
+  private checkFlightReservation(): void {
     console.log(
       "************************  CHECK FLIGHT RESERVATION  ************************\n"
     );
@@ -98,7 +101,7 @@ export class AirlineApp {
     flightReservation.displayCompleteReservationInfo();
   }
 
-  checkIn(): void {
+  private checkIn(): void {
     console.log(
       "************************  CHECK-IN  ************************\n"
     );
@@ -170,6 +173,7 @@ export class AirlineApp {
   }
 }
 
+/*
 //Test Code
 
 const country1 = new Country("Costa Rica");
@@ -351,3 +355,4 @@ app.airportGraph.addAirportFlightConnection(
 );
 
 app.initiateProgram();
+*/

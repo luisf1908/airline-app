@@ -387,8 +387,6 @@ export class AirportGraph {
       userChoice < 1 ||
       userChoice > displayLoopLimit
     ) {
-      console.log("Invalid option");
-
       return;
     }
 

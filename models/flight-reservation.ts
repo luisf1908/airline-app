@@ -115,11 +115,11 @@ export class FlightReservation {
     for (let i = 0; i < tripsQty; i++) {
       if (i === 0) {
         console.log(
-          `//  Flight from ${outboundTripOriginAirport?.airportId} to ${outboundTripDestinationAirport?.airportId}  //`
+          `//  Flight from ${outboundTripOriginAirport?.city.name} to ${outboundTripDestinationAirport?.city.name}  //`
         );
       } else {
         console.log(
-          `//  Flight from ${returnTripOriginAirport?.airportId} to ${returnTripDestinationAirport?.airportId}  //`
+          `//  Flight from ${returnTripOriginAirport?.city.name} to ${returnTripDestinationAirport?.city.name}  //`
         );
       }
 
@@ -128,6 +128,16 @@ export class FlightReservation {
           `Want to add baggage for ${this.passengers[j].firstName} ${this.passengers[j].lastName}?\n1. Yes\n2. Skip to next passenger`
         );
         const userChoice1 = Number(prompt("Choose option: "));
+
+        if (
+          !userChoice1 ||
+          isNaN(userChoice1) ||
+          userChoice1 < 1 ||
+          userChoice1 > 2
+        ) {
+          console.log("\nInvalid option\n");
+          return;
+        }
         if (userChoice1 === 1) {
           this.addBaggage(i, j);
         }
@@ -158,7 +168,7 @@ export class FlightReservation {
         baggageQty < 0 ||
         baggageQty > 5
       ) {
-        console.log("Invalid choice or quantity");
+        console.log("\nInvalid choice or quantity");
       } else if (baggageType === 1 && baggageQty >= 0 && baggageQty <= 5) {
         baggage.carryOn = baggageQty;
       } else if (baggageType === 2 && baggageQty >= 0 && baggageQty <= 5) {
@@ -193,11 +203,11 @@ export class FlightReservation {
     for (let i = 0; i < tripsQty; i++) {
       if (i === 0) {
         console.log(
-          `* Flight from ${outboundTripOriginAirport?.airportId} to ${outboundTripDestinationAirport?.airportId} *`
+          `* Flight from ${outboundTripOriginAirport?.city.name} to ${outboundTripDestinationAirport?.city.name} *`
         );
       } else {
         console.log(
-          `* Flight from ${returnTripOriginAirport?.airportId} to ${returnTripDestinationAirport?.airportId} *`
+          `* Flight from ${returnTripOriginAirport?.city.name} to ${returnTripDestinationAirport?.city.name} *`
         );
       }
 
@@ -225,19 +235,48 @@ export class FlightReservation {
       this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
     for (let i = 0; i < totalReservationFlights.length; i++) {
       console.log(
-        `\n//  Flight from ${totalReservationFlights[i].origin.airportId} to ${totalReservationFlights[i].destination.airportId}  //`
+        `\n//  Flight from ${totalReservationFlights[i].origin.city.name} to ${totalReservationFlights[i].destination.city.name}  //`
       );
       for (let j = 0; j < this.passengers.length; j++) {
         console.log(
           `Want to reserve a seat for ${this.passengers[j].firstName} ${this.passengers[j].lastName}?\n1. Yes\n2. Skip to next passenger`
         );
         const userChoice1 = Number(prompt("Choose option: "));
+
+        if (
+          !userChoice1 ||
+          isNaN(userChoice1) ||
+          userChoice1 < 1 ||
+          userChoice1 > 2
+        ) {
+          console.log("\nInvalid option\n");
+          return;
+        }
+
         if (userChoice1 === 1) {
           console.log(`\nBlueHorizon Airplane`);
           totalReservationFlights[i].airplane.displaySeats();
           console.log("\nChoose the row and seat you want to reserve");
           const row = Number(prompt("Row: "));
           const seat = prompt("Seat letter: ");
+
+          //Error handling
+          if (
+            !row ||
+            isNaN(row) ||
+            row < 1 ||
+            row > totalReservationFlights[i].airplane.rows
+          ) {
+            console.log("\nInvalid row");
+            continue;
+          }
+
+          const allowedSeats: string[] = ["A", "B", "C", "D", "E", "F"];
+          if (!seat || !allowedSeats.includes(seat.toUpperCase())) {
+            console.log("\nInvalid seat");
+            continue;
+          }
+
           totalReservationFlights[i].airplane.reserveSeat(row, seat);
           console.log(`\nSeat ${row}${seat.toUpperCase()} has been reserved`);
           totalReservationFlights[i].airplane.displaySeats();
@@ -270,7 +309,7 @@ export class FlightReservation {
       this.itinerary.outboundTrip.concat(this.itinerary.returnTrip);
     for (let i = 0; i < totalReservationFlights.length; i++) {
       console.log(
-        `* Flight from ${totalReservationFlights[i].origin.airportId} to ${totalReservationFlights[i].destination.airportId} *`
+        `* Flight from ${totalReservationFlights[i].origin.city.name} to ${totalReservationFlights[i].destination.city.name} *`
       );
       for (let j = 0; j < this.passengers.length; j++) {
         console.log(

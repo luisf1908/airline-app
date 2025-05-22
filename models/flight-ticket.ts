@@ -47,7 +47,7 @@ export class FlightTicket {
 
     console.log(`Flight number: ${this.flight.flightNumber}\n`);
     console.log(
-      `From ${this.flight.origin.city.name} to ${this.flight.destination.city.name}\n`
+      `From ${this.flight.origin.city.name} (${this.flight.origin.airportId}) to ${this.flight.destination.city.name} (${this.flight.destination.airportId})\n`
     );
     console.log(
       `Passenger: ${this.passenger.firstName} ${this.passenger.lastName}\n`
